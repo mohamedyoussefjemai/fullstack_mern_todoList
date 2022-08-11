@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs')
 const validateRegisterInput = require('../validations/registrationValidation')
 const jwt = require('jsonwebtoken')
 const requireAuth = require('../middlewares/permissions')
+
 // @Route   GET /api/auth/test
 // @desc    Test auth api
 // @access  Public

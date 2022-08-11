@@ -4,7 +4,8 @@ const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
 
 // import routes
-const authRoute = require('./routes/auth') 
+const authRoute = require('./routes/auth')
+const toDoRoute = require('./routes/toDo')
 
 const app = express()
 
@@ -17,6 +18,7 @@ app.get('/api', (req, res) => {
 })
 
 app.use('/api/auth', authRoute)
+app.use('/api/todos', toDoRoute)
 
 mongoose.connect(process.env.MONGO_URI).then(() => {
   console.log('mongoose connected')
