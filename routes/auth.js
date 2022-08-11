@@ -33,6 +33,15 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12)
     const newUser = new User({ email, password: hashedPassword, name })
     const savedUser = await newUser.save()
+    const payload = { userId: savedUser._id }
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: '7d'
+    })
+    res.cookie('access-token', token, {
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production'
+    })
     const returnedUser = { ...savedUser._doc }
     delete returnedUser.password
     return res.json({ user: returnedUser })
@@ -86,6 +95,19 @@ router.get('/current', requireAuth, async (req, res) => {
     return res.status(401).send('Unauthorised')
   }
   return res.json(req.user)
+})
+
+// @Route   PUT /api/auth/logout
+// @desc    Logout and clean cookie
+// @access  Private
+router.put('/logout', requireAuth, async (req, res) => {
+  try {
+    res.clearCookie('access-token')
+    return res.json({ success: true })
+  } catch (err) {
+    console.log(err)
+    res.status(500).send(err.message)
+  }
 })
 
 module.exports = router

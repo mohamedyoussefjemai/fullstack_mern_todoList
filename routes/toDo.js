@@ -47,4 +47,99 @@ router.get('/current', requireAuth, async (req, res) => {
   }
 })
 
+// @Route   PUT /api/todos/:id/complete
+// @desc    mark a to do complete
+// @access  Private
+router.put('/:id/complete', requireAuth, async (req, res) => {
+  try {
+    const toDo = await ToDo.findOne({ user: req.user._id, _id: req.params.id })
+    if (!toDo) {
+      return res.status(404).json('Could not find toDo')
+    }
+    if (toDo.complete) {
+      return res.status(400).json('toDo already complete')
+    }
+
+    const updateToDo = await ToDo.findByIdAndUpdate(
+      { user: req.user._id, _id: req.params.id },
+      { complete: true, completeAt: new Date() },
+      { new: true }
+    )
+    return res.json(updateToDo)
+  } catch (err) {
+    console.log(err)
+    res.status(500).send(err.message)
+  }
+})
+
+// @Route   PUT /api/todos/:id/uncomplete
+// @desc    mark a to do uncomplete
+// @access  Private
+router.put('/:id/uncomplete', requireAuth, async (req, res) => {
+  try {
+    const toDo = await ToDo.findOne({ user: req.user._id, _id: req.params.id })
+    if (!toDo) {
+      return res.status(404).json('Could not find toDo')
+    }
+
+    const updateToDo = await ToDo.findByIdAndUpdate(
+      { user: req.user._id, _id: req.params.id },
+      { complete: false, completeAt: null },
+      { new: true }
+    )
+    return res.json(updateToDo)
+  } catch (err) {
+    console.log(err)
+    res.status(500).send(err.message)
+  }
+})
+
+// @Route   PUT /api/todos/:id
+// @desc    update content a to do
+// @access  Private
+router.put('/:id', requireAuth, async (req, res) => {
+  try {
+    const toDo = await ToDo.findOne({ user: req.user._id, _id: req.params.id })
+    if (!toDo) {
+      return res.status(404).json('Could not find toDo')
+    }
+    const { isValid, errors } = validateToDoInput(req.body)
+    if (!isValid) {
+      return res.status(400).json(errors)
+    }
+    const { content } = req.body
+    const updateToDo = await ToDo.findByIdAndUpdate(
+      { user: req.user._id, _id: req.params.id },
+      { content },
+      { new: true }
+    )
+    return res.json(updateToDo)
+  } catch (err) {
+    console.log(err)
+    res.status(500).send(err.message)
+  }
+})
+// @Route   DELETE /api/todos/:id
+// @desc    delete a toDo
+// @access  Private
+router.delete('/:id', requireAuth, async (req, res) => {
+  try {
+    const toDo = await ToDo.findOne({ user: req.user._id, _id: req.params.id })
+    if (!toDo) {
+      return res.status(404).json('Could not find toDo')
+    }
+    const { isValid, errors } = validateToDoInput(req.body)
+    if (!isValid) {
+      return res.status(400).json(errors)
+    }
+    await ToDo.findByIdAndRemove(
+      { user: req.user._id, _id: req.params.id }
+    )
+    return res.json({ success: true })
+  } catch (err) {
+    console.log(err)
+    res.status(500).send(err.message)
+  }
+})
+
 module.exports = router
