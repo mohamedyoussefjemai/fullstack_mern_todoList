@@ -128,10 +128,6 @@ router.delete('/:id', requireAuth, async (req, res) => {
     if (!toDo) {
       return res.status(404).json('Could not find toDo')
     }
-    const { isValid, errors } = validateToDoInput(req.body)
-    if (!isValid) {
-      return res.status(400).json(errors)
-    }
     await ToDo.findByIdAndRemove(
       { user: req.user._id, _id: req.params.id }
     )
